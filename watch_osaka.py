@@ -1,27 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 
-# =========================
-# 設定
-# =========================
-
-url = "https://www.osaka-u.ac.jp/ja/event"
-
-# 阪大は幅広く拾う
-keywords = [
-    "講演",
-    "講演会",
-    "公開講座",
-    "講習会",
-    "セミナー",
-    "シンポジウム",
-    "フォーラム",
-    "イベント"
-]
-
-# =========================
-# 通知済み読み込み
-# =========================
+url = "https://www.osaka-u.ac.jp/ja/event/2026/05"
 
 try:
     with open("seen_osaka.txt", "r", encoding="utf-8") as f:
@@ -31,55 +11,34 @@ except FileNotFoundError:
 
 print("通知済み件数:", len(seen))
 
-# =========================
-# HTML取得
-# =========================
-
 html = requests.get(url, timeout=30).text
 soup = BeautifulSoup(html, "html.parser")
-
-# =========================
-# 抽出
-# =========================
 
 new_events = []
 
 for a in soup.find_all("a", href=True):
 
+    href = a["href"]
     text = a.get_text(" ", strip=True)
-    link = a["href"]
 
-    # ★デバッグ（重要：何が取れてるか確認）
-    if len(text) > 10:
-        print("RAW:", text)
+    # ★阪大はここが本体フィルタ
+    if "/ja/event/2026/" in href and href != "/ja/event/2026/05":
 
-    # URL整形
-    if link.startswith("/"):
-        link = "https://www.osaka-u.ac.jp" + link
+        if href.startswith("/"):
+            href = "https://www.osaka-u.ac.jp" + href
 
-    # キーワード判定
-    if any(k in text for k in keywords):
-
-        if link not in seen:
+        if href not in seen:
 
             print("NEW:", text)
-            print(link)
+            print(href)
 
-            new_events.append((text, link))
-
-# =========================
-# 保存
-# =========================
+            new_events.append((text, href))
 
 with open("seen_osaka.txt", "a", encoding="utf-8") as f:
-    for _, link in new_events:
-        f.write(link + "\n")
+    for _, href in new_events:
+        f.write(href + "\n")
 
 print("追加保存:", len(new_events))
-
-# =========================
-# 結果
-# =========================
 
 if not new_events:
     print("新規イベントなし")
