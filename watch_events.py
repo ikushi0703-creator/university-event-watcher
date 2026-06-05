@@ -1,10 +1,12 @@
 import requests
+from bs4 import BeautifulSoup
 
-html = requests.get(
-    "https://www.osaka-u.ac.jp/ja/event",
-    timeout=30
-).text
+url = "https://www.osaka-u.ac.jp/ja/event"
 
-for line in html.splitlines():
-    if "api" in line.lower() or "json" in line.lower():
-        print(line)
+html = requests.get(url, timeout=30).text
+
+soup = BeautifulSoup(html, "html.parser")
+
+text = soup.get_text(" ", strip=True)
+
+print(text[:10000])
