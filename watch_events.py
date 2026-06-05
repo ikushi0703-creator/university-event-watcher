@@ -1,21 +1,8 @@
-import os
-import smtplib
-from email.message import EmailMessage
+import requests
 
-gmail = os.environ["GMAIL_ADDRESS"]
-password = os.environ["GMAIL_APP_PASSWORD"]
+url = "https://www.kyoto-u.ac.jp/ja/event"
 
-msg = EmailMessage()
-msg["Subject"] = "大学イベント監視システム テスト"
-msg["From"] = gmail
-msg["To"] = gmail
+r = requests.get(url, timeout=30)
 
-msg.set_content(
-    "GitHub Actions からのテストメールです。"
-)
-
-with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
-    smtp.login(gmail, password)
-    smtp.send_message(msg)
-
-print("mail sent")
+print("status:", r.status_code)
+print(r.text[:3000])
