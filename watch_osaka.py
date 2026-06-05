@@ -16,13 +16,20 @@ soup = BeautifulSoup(html, "html.parser")
 
 new_events = []
 
-for a in soup.find_all("a", href=True):
+# ★重要：ページ内すべてのリンクをまず取得
+links = soup.select("a[href]")
 
-    href = a["href"]
+for a in links:
+
+    href = a.get("href", "")
     text = a.get_text(" ", strip=True)
 
-    # ★阪大はここが本体フィルタ
-    if "/ja/event/2026/" in href and href != "/ja/event/2026/05":
+    # デバッグ（重要）
+    if "講" in text or "セミ" in text or len(text) > 15:
+        print("DEBUG:", text, href)
+
+    # 阪大イベントページの特徴フィルタ
+    if "/ja/event/2026/05/" in href:
 
         if href.startswith("/"):
             href = "https://www.osaka-u.ac.jp" + href
