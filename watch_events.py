@@ -7,8 +7,11 @@ html = requests.get(url, timeout=30).text
 
 soup = BeautifulSoup(html, "html.parser")
 
-for a in soup.find_all("a"):
+for a in soup.find_all("a", href=True):
+
     text = a.get_text(" ", strip=True)
 
-    if text:
-        print(text[:150])
+    if "講演" in text or "公開講座" in text:
+        print("TITLE:", text)
+        print("URL:", a["href"])
+        print("-" * 50)
