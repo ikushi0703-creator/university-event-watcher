@@ -3,7 +3,14 @@ from bs4 import BeautifulSoup
 
 url = "https://www.kobe-u.ac.jp/ja/news/events/"
 
-html = requests.get(url, timeout=30).text
+r = requests.get(url, timeout=30)
+
+print("encoding =", r.encoding)
+print("apparent =", r.apparent_encoding)
+
+r.encoding = r.apparent_encoding
+
+html = r.text
 
 soup = BeautifulSoup(html, "html.parser")
 
