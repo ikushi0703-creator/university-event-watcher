@@ -1,7 +1,6 @@
 import requests
 from bs4 import BeautifulSoup
 
-# 通知済みURLを読む
 try:
     with open("seen_events.txt", "r", encoding="utf-8") as f:
         seen = set(line.strip() for line in f if line.strip())
@@ -14,7 +13,7 @@ url = "https://www.kyoto-u.ac.jp/ja/event"
 html = requests.get(url, timeout=30).text
 soup = BeautifulSoup(html, "html.parser")
 
-count = 0
+new_links = []
 
 for a in soup.find_all("a", href=True):
 
@@ -28,8 +27,14 @@ for a in soup.find_all("a", href=True):
             link = "https://www.kyoto-u.ac.jp" + link
 
         if link not in seen:
+
             print("NEW:", text)
             print(link)
-            count += 1
 
-print("新規イベント数:", count)
+            new_links.append(link)
+
+with open("seen_events.txt", "a", encoding="utf-8") as f:
+    for link in new_links:
+        f.write(link + "\n")
+
+print("追加保存:", len(new_links))
