@@ -5,4 +5,10 @@ url = "https://www.osaka-u.ac.jp/ja/event"
 
 html = requests.get(url, timeout=30).text
 
-print(html[:3000])
+soup = BeautifulSoup(html, "html.parser")
+
+for a in soup.find_all("a", href=True):
+    text = a.get_text(" ", strip=True)
+
+    if text:
+        print(text)
