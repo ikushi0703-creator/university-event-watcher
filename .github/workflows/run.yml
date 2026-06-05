@@ -17,4 +17,7 @@ jobs:
           python-version: '3.13'
 
       - name: Run script
+        env:
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
         run: python watch_events.py
