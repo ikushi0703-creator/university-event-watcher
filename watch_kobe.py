@@ -2,8 +2,16 @@ import requests
 from bs4 import BeautifulSoup
 
 BASE = "https://www.kobe-u.ac.jp"
-START_URL = "https://www.kobe-u.ac.jp/ja/news/events/"
 
+START_URLS = [
+    "https://www.kobe-u.ac.jp/ja/news/events/category/talk",
+    "https://www.kobe-u.ac.jp/ja/news/events/category/open_lecture",
+    "https://www.kobe-u.ac.jp/ja/news/events/category/briefing",
+    "https://www.kobe-u.ac.jp/ja/news/events/category/exhibition",
+    "https://www.kobe-u.ac.jp/ja/news/events/category/activities",
+]
+
+# seen読み込み
 try:
     with open("seen_kobe.txt", "r", encoding="utf-8") as f:
         seen = set(line.strip() for line in f if line.strip())
@@ -12,45 +20,39 @@ except FileNotFoundError:
 
 print("通知済み件数:", len(seen))
 
-html = requests.get(START_URL, timeout=30).text
-soup = BeautifulSoup(html, "html.parser")
-
 new_events = []
 
-# ■ 重要：カード型リンクだけ拾う（aタグ全部禁止）
-for a in soup.select("a[href*='/news/events/']"):
+for url in START_URLS:
 
-    href = a["href"]
-    text = a.get_text(" ", strip=True)
+    html = requests.get(url, timeout=30).text
+    soup = BeautifulSoup(html, "html.parser")
 
-    if href.startswith("/"):
-        href = BASE + href
+    for a in soup.find_all("a", href=True):
 
-    href = href.split("?")[0].rstrip("/")
+        href = a["href"]
+        text = a.get_text(" ", strip=True)
 
-    # ■ ノイズ除去（カテゴリ系完全除外）
-    if any(x in href for x in [
-        "/category/",
-        "/area/",
-        "/place/",
-        "/audience/",
-        "/format/",
-        "/en/news/events"
-    ]):
-        continue
+        if href.startswith("/"):
+            href = BASE + href
 
-    # ■ トップ除外
-    if href.rstrip("/") == START_URL.rstrip("/"):
-        continue
+        if "/news/events/" not in href:
+            continue
 
-    if href in seen:
-        continue
+        # カテゴリ・ナビ除外
+        if any(x in href for x in ["/category/", "/area/", "/place/", "/audience/", "/format/"]):
+            continue
 
-    print("NEW:", text)
-    print(href)
+        href = href.split("?")[0].rstrip("/")
 
-    new_events.append(href)
+        if href in seen:
+            continue
 
+        print("NEW:", text)
+        print(href)
+
+        new_events.append(href)
+
+# 保存
 with open("seen_kobe.txt", "a", encoding="utf-8") as f:
     for href in new_events:
         f.write(href + "\n")
