@@ -22,5 +22,11 @@ jobs:
           pip install requests beautifulsoup4 playwright
           playwright install chromium
 
-      - name: Run script
+      - name: Run Kyoto
+        run: python watch_events.py
+
+      - name: Run Osaka
         run: python watch_osaka.py
+
+      - name: Run Kobe
+        run: python watch_kobe.py
