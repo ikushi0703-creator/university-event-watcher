@@ -20,9 +20,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install requests beautifulsoup4 playwright
+          playwright install chromium
 
-      - name: Run script
-        env:
-          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
-          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+      - name: Run Kyoto
         run: python watch_events.py
+
+      - name: Run Osaka
+        run: python watch_osaka.py
+
+      - name: Run Kobe
+        run: python watch_kobe.py
