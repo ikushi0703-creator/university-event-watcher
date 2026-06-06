@@ -1,5 +1,4 @@
-import requests
-from bs4 import BeautifulSoup
+from playwright.sync_api import sync_playwright
 
 URL = "https://www.kobe-u.ac.jp/ja/news/events/"
 
@@ -11,39 +10,43 @@ except FileNotFoundError:
 
 print("通知済み件数:", len(seen))
 
-html = requests.get(URL, timeout=30).text
-soup = BeautifulSoup(html, "html.parser")
-
 new_events = []
 
-# ★重要：カード要素っぽいものだけ拾う
-cards = soup.select("a[href*='/news/events/']")
+with sync_playwright() as p:
+    browser = p.chromium.launch(headless=True)
+    page = browser.new_page()
 
-for a in cards:
+    page.goto(URL, wait_until="networkidle")
 
-    text = a.get_text(" ", strip=True)
+    html = page.content()
+
+    browser.close()
+
+from bs4 import BeautifulSoup
+soup = BeautifulSoup(html, "html.parser")
+
+for a in soup.find_all("a", href=True):
+
     href = a["href"]
+    text = a.get_text(" ", strip=True)
 
     if href.startswith("/"):
         href = "https://www.kobe-u.ac.jp" + href
 
-    href = href.split("?")[0].rstrip("/")
+    if "/news/events" not in href:
+        continue
 
-    # ノイズ除去
     if any(x in href for x in [
         "/category/",
         "/area/",
         "/place/",
         "/audience/",
-        "/format/",
+        "/format/"
     ]):
         continue
 
-    # トップ除外
-    if href.rstrip("/") == URL.rstrip("/"):
-        continue
+    href = href.split("?")[0].rstrip("/")
 
-    # 重複
     if href in seen:
         continue
 
