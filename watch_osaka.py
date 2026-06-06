@@ -36,8 +36,10 @@ for a in soup.find_all("a", href=True):
     if "/ja/event/2026/05/" in href:
 
         if href.startswith("/"):
-            href = "https://www.osaka-u.ac.jp" + href
+    href = "https://www.osaka-u.ac.jp" + href
 
+href = href.split("?")[0]
+href = href.rstrip("/")
         if href not in seen:
 
             print("NEW:", text)
