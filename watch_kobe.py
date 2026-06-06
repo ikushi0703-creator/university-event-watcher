@@ -16,6 +16,7 @@ soup = BeautifulSoup(html, "html.parser")
 
 new_events = []
 
+# ★重要：イベント“詳細ページ”っぽいURLだけに絞る
 for a in soup.find_all("a", href=True):
 
     text = a.get_text(" ", strip=True)
@@ -26,23 +27,23 @@ for a in soup.find_all("a", href=True):
 
     href = href.split("?")[0].rstrip("/")
 
-    # ■ ノイズ除去（ここが重要）
-    if "/news/events/category/" in href:
-        continue
-    if "/news/events/area/" in href:
-        continue
-    if "/news/events/place/" in href:
-        continue
-    if "/news/events/audience/" in href:
-        continue
-    if "/news/events/format/" in href:
+    # ■ ここが核心（詳細ページだけ残す）
+    if "/news/events/" not in href:
         continue
 
-    # イベント以外除外
-    if "/news/events" not in href:
+    if any(x in href for x in [
+        "/category/",
+        "/area/",
+        "/place/",
+        "/audience/",
+        "/format/"
+    ]):
         continue
 
-    # 重複防止
+    # トップページ除外
+    if href.rstrip("/") == "https://www.kobe-u.ac.jp/ja/news/events":
+        continue
+
     if href in seen:
         continue
 
