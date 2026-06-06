@@ -1,7 +1,6 @@
-import requests
-from bs4 import BeautifulSoup
+from playwright.sync_api import sync_playwright
 
-url = "https://www.osaka-u.ac.jp/ja/event/2026/05"
+URL = "https://www.osaka-u.ac.jp/ja/event/2026/05"
 
 try:
     with open("seen_osaka.txt", "r", encoding="utf-8") as f:
@@ -11,24 +10,29 @@ except FileNotFoundError:
 
 print("通知済み件数:", len(seen))
 
-html = requests.get(url, timeout=30).text
-soup = BeautifulSoup(html, "html.parser")
-
 new_events = []
 
-# ★重要：ページ内すべてのリンクをまず取得
-links = soup.select("a[href]")
+with sync_playwright() as p:
+    browser = p.chromium.launch(headless=True)
+    page = browser.new_page()
 
-for a in links:
+    page.goto(URL, wait_until="networkidle")
 
-    href = a.get("href", "")
+    # JS実行後のHTML取得
+    html = page.content()
+
+    browser.close()
+
+from bs4 import BeautifulSoup
+
+soup = BeautifulSoup(html, "html.parser")
+
+for a in soup.find_all("a", href=True):
+
     text = a.get_text(" ", strip=True)
+    href = a["href"]
 
-    # デバッグ（重要）
-    if "講" in text or "セミ" in text or len(text) > 15:
-        print("DEBUG:", text, href)
-
-    # 阪大イベントページの特徴フィルタ
+    # 阪大イベントURLだけ拾う
     if "/ja/event/2026/05/" in href:
 
         if href.startswith("/"):
