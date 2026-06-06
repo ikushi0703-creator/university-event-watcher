@@ -1,4 +1,5 @@
 from playwright.sync_api import sync_playwright
+from bs4 import BeautifulSoup
 
 URL = "https://www.kobe-u.ac.jp/ja/news/events/"
 
@@ -22,7 +23,6 @@ with sync_playwright() as p:
 
     browser.close()
 
-from bs4 import BeautifulSoup
 soup = BeautifulSoup(html, "html.parser")
 
 for a in soup.find_all("a", href=True):
@@ -33,19 +33,21 @@ for a in soup.find_all("a", href=True):
     if href.startswith("/"):
         href = "https://www.kobe-u.ac.jp" + href
 
-    if "/news/events" not in href:
-        continue
+    href = href.split("?")[0].rstrip("/")
 
+    # ノイズ除去
     if any(x in href for x in [
         "/category/",
         "/area/",
         "/place/",
         "/audience/",
-        "/format/"
+        "/format/",
+        "/en/news/events"
     ]):
         continue
 
-    href = href.split("?")[0].rstrip("/")
+    if href.rstrip("/") == URL.rstrip("/"):
+        continue
 
     if href in seen:
         continue
