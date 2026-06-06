@@ -33,14 +33,19 @@ for a in soup.find_all("a", href=True):
     href = a["href"]
 
     # 阪大イベントURLだけ拾う
-    if "/ja/event/2026/05/" in href:
+    if href.startswith("/"):
+        href = "https://www.osaka-u.ac.jp" + href
 
-        if href.startswith("/"):
-            href = "https://www.osaka-u.ac.jp" + href
+        href = href.split("?")[0].rstrip("/")
 
-        href = href.split("?")[0]
-        href = href.rstrip("/")
-        
+    if href in seen:
+    continue
+
+            print("NEW:", text)
+            print(href)
+
+        new_events.append((text, href))
+
         if href not in seen:
 
             print("NEW:", text)
