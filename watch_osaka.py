@@ -39,7 +39,7 @@ for a in soup.find_all("a", href=True):
         href = href.split("?")[0].rstrip("/")
 
     if href in seen:
-    continue
+        continue
 
             print("NEW:", text)
             print(href)
