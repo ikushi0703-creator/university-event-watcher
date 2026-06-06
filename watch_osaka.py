@@ -1,5 +1,4 @@
 from playwright.sync_api import sync_playwright
-from bs4 import BeautifulSoup
 
 URL = "https://www.osaka-u.ac.jp/ja/event/2026/05"
 
@@ -17,7 +16,7 @@ print("通知済み件数:", len(seen))
 new_events = []
 
 # =========================
-# ブラウザ起動（JS実行込み）
+# ブラウザ起動（JS対応）
 # =========================
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
@@ -32,6 +31,8 @@ with sync_playwright() as p:
 # =========================
 # HTML解析
 # =========================
+from bs4 import BeautifulSoup
+
 soup = BeautifulSoup(html, "html.parser")
 
 for a in soup.find_all("a", href=True):
@@ -43,14 +44,21 @@ for a in soup.find_all("a", href=True):
     if href.startswith("/"):
         href = "https://www.osaka-u.ac.jp" + href
 
-    # ノイズ除去
+    # 正規化
     href = href.split("?")[0].rstrip("/")
 
-    # 阪大イベントだけ対象
+    # =========================
+    # ノイズ除去
+    # =========================
+    if "/contents" in href:
+        continue
+
     if "/ja/event/" not in href:
         continue
 
-    # 重複排除
+    # =========================
+    # 重複防止
+    # =========================
     if href in seen:
         continue
 
