@@ -41,8 +41,8 @@ for a in soup.find_all("a", href=True):
     if href in seen:
         continue
 
-            print("NEW:", text)
-            print(href)
+        print("NEW:", text)
+        print(href)
 
         new_events.append((text, href))
 
